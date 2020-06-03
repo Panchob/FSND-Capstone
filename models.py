@@ -29,7 +29,6 @@ class Category(db.Model):
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    recipes =  db.relationship('Recipe', backref='category', lazy=True)
 
 class Recipe(db.Model):
     __tablename__ = 'recipe'
@@ -39,9 +38,27 @@ class Recipe(db.Model):
     time = Column(DateTime)
     description = Column(String(500))
     instruction = Column(String(5000))
+    category = db.relationship('Recipe', backref='category', lazy=True)
     
 class Ingredient(db.Model):
-    __tablename__ = 'ingredients'
+    __tablename__ = 'ingredient'
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
+
+class Quantity(db.Model):
+    __tablename__ = 'quantity'
+
+    id = Column(Integer, primary_key=True)
+    recipe_id = Column(Integer, db.ForeignKey('recipes.id', ondelete="CASCADE"))
+    ingredient_id = Column(Integer, db.ForeignKey('ingredients.id', ondelete="CASCADE"))
+    # String so it's possible to enter something like "3/4"
+    quantity = Column(String)
+
+
+class Measurement(db.Model):
+    __tablename__ = 'measurement'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
