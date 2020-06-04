@@ -1,7 +1,9 @@
 import os
-from flask import Flask
-from models import setup_db
+from flask import Flask, request, abort, jsonify
+from models import *
 from flask_cors import CORS
+
+RECIPE_PER_PAGE = 3
 
 def create_app(test_config=None):
     
@@ -9,9 +11,151 @@ def create_app(test_config=None):
     setup_db(app)
     CORS(app)
 
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Headers',
+                             'Content-Type, Authorization')
+        return response
+
     @app.route('/')
     def hello():
         return "HELLO"
+    
+    @app.route('/recipes')
+    def retrieve_recipe():
+        page = request.args.get('page', 1, type=int)
+        
+        try:
+            selection = Recipe.query.order_by(Recipe.id).\
+                        paginate(page, RECIPE_PER_PAGE).items
+        except:
+            abort(404)
+        
+        if len(selection) == 0:
+            abort(404)
+
+        recipes = [recipe.format() for recipe in selection]
+        return jsonify({
+            'success': True,
+            'recipe': recipes,
+        })
+    @app.route('/recipes/create', methods=['POST'])
+    def create_new_recipe():
+        body = request.get_json()
+
+        name = body.get('name', None)
+        category = body.get('category', None)
+        time = body.get('time', None)
+        description = body.get('description', None)
+        instructions = body.get('instructions', None)
+
+        try:
+            new_recipe = Recipe(name, time, description, instructions, category)
+
+            db.session.add(new_recipe)
+
+            return jsonify({
+                'success': True,
+                'created': new_recipe.id
+            }), 200
+        except:
+            db.session.rollback()
+            abort(422)
+        finally:
+            db.session.close()
+
+    @app.route('/recipes/<int:recipe_id>', methods=['DELETE'])
+    def delete_recipe(recipe_id):
+        try:
+            recipe = Recipe.query.\
+                     filter(Recipe.id == recipe_id).one_or_none()
+
+            if recipe is None:
+                abort(404)
+            
+            db.session.delete(recipe)
+            db.session.commit()
+
+            return jsonify({
+                'success':True,
+                'deleted': recipe_id
+            })
+        
+        except:
+            db.session.rollback()
+            abort(422)
+        finally:
+            db.session.close()
+            
+    @app.route('/categories')
+    def retrieve_categories():
+        selection = Category.query.all()
+        categories = [category.format() for category in selection]
+
+        if len(categories) == 0:
+            abort(404)
+        
+        return jsonify({
+            'success': True,
+            'categories':categories
+        })
+    
+    @app.route('/categories/<category_id>/recipes')
+    def list_recipe_from_category(category_id):
+
+        selection = Recipe.query.\
+            filter(Recipe.category == category_id).all()
+        recipes = [recipe.format() for recipe in selection]
+        category = Category.query.get(category_id)
+
+        if category is None:
+            abort(404)
+
+        return jsonify({
+            'success': True,
+            'recipes': recipes,
+            'category': category.name
+        })
+
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({
+            "success": False,
+            "error": 404,
+            "message": "ressource not found"
+        }), 404
+
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return jsonify({
+            "success": False,
+            "error": 422,
+            "message": "unprocessable"
+        }), 422
+
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({
+            "success": False,
+            "error": 400,
+            "message": "bad request"
+        }), 400
+
+    @app.errorhandler(405)
+    def bad_request(error):
+        return jsonify({
+            "success": False,
+            "error": 405,
+            "message": "method not allowed"
+        }), 405
+
+    @app.errorhandler(500)
+    def bad_request(error):
+        return jsonify({
+            "success": False,
+            "error": 500,
+            "message": "Internal Server Error"
+        }), 500
 
     return app
 
