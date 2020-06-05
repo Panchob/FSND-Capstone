@@ -39,6 +39,23 @@ def create_app(test_config=None):
             'success': True,
             'recipe': recipes,
         })
+    
+    @app.route('/recipes', methods=['POST'])
+    def search_recipes():
+        body = request.get_json()
+
+        searchTerm = body.get("searchTerm", None)
+        search_results = Recipe.query.\
+            filter(Recipe.name.ilike("%{}%".format(searchTerm))).all()
+        
+        recipes = [recipe.format() for recipe in search_results]
+
+        return jsonify({
+            'success': True,
+            'recipes': recipes,
+        })
+
+
     @app.route('/recipes/create', methods=['POST'])
     def create_new_recipe():
         body = request.get_json()
@@ -51,8 +68,8 @@ def create_app(test_config=None):
 
         try:
             new_recipe = Recipe(name, time, description, instructions, category)
-
             db.session.add(new_recipe)
+            db.session.commit()
 
             return jsonify({
                 'success': True,
@@ -81,6 +98,26 @@ def create_app(test_config=None):
                 'deleted': recipe_id
             })
         
+        except:
+            db.session.rollback()
+            abort(422)
+        finally:
+            db.session.close()
+
+    @app.route('/category/create', methods=['POST'])
+    def create_new_category():
+        body = request.get_json()
+
+        name = body.get('name', None)
+
+        try:
+            new_category = Category(name)
+            db.session.add(new_category)
+            db.session.commit()
+            return jsonify({
+                'success': True,
+                'created': new_category.id
+            }), 200
         except:
             db.session.rollback()
             abort(422)
@@ -116,6 +153,67 @@ def create_app(test_config=None):
             'recipes': recipes,
             'category': category.name
         })
+
+    @app.route('/recipes/<recipe_id>/ingredients')
+    def list_ingredients_from_recipe(recipe_id):
+
+        selection = Quantity.query.\
+            filter(Quantity.recipe_id == recipe_id).all()
+        
+        if selection is None:
+            abort(404)
+
+        ingredients = []
+        for s in selection:
+            ingredient = {
+                'name': Ingredient.query.get(s.ingredient_id).name,
+                'quantity': s.quantity,
+                'measurement': Measurement.query.get(s.measurement_id).name
+            }
+            ingredients.append(ingredient)
+
+
+        return jsonify({
+            'success': True,
+            'ingredients': ingredients
+        })
+
+    @app.route('/recipes/<int:recipe_id>/modify', methods=['PATCH'])
+    def modify_recipe(recipe_id):
+        body = request.get_json()
+
+        try:
+            recipe = Recipe.query.filter(Recipe.id == recipe_id).one_or_none()
+            if not recipe:
+                abort(404)
+            
+            if 'name' in body:
+                recipe.name = body.get('title')
+            
+            if 'time' in body:
+                recipe.time = body.get('time')
+
+            if 'description' in body:
+                recipe.description = body.get('description')
+
+            if 'instructions' in body:
+                recipe.instructions = body.get('instructions')
+            
+            if 'category' in body:
+                recipe.category = body.get('category')
+            
+            db.session.commit()
+
+            return jsonify({
+                'success': True,
+                'recipe': recipe.format()
+            })
+
+        except:
+            db.session.rollback()
+            abort(422)
+        finally:
+            db.session.close
 
     @app.errorhandler(404)
     def not_found(error):
