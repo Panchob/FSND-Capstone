@@ -50,7 +50,7 @@ class Recipe(db.Model):
     time = Column(String)
     description = Column(String(500))
     instructions = Column(String(5000))
-    category = Column(String)
+    category = Column(Integer)
     ingredients = db.relationship("Quantity", backref='recipe', lazy=True, passive_deletes=True)
 
     def __init__(self, name, time, description, instructions, category):
