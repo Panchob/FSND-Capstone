@@ -40,14 +40,61 @@ curl https://le-mitron.herokuapp.com/recipes
 
 ### GET 'categories/<category_id>/recipes'
 
+- Return a list of all recipe in that category
+
+```bash
+curl https://le-mitron.herokuapp.com/categories/1/recipes
+```
+
 ### GET '/recipes/<recipe_id>/ingredients'
+
+- Return a list of ingredients with quantity and measurement for given recipe.
+
+```bash
+curl https://le-mitron.herokuapp.com/recipes/1/ingredients
+```
 
 ### POST '/recipes'
 
+- Search for recipes containing the specified query in their name.
+- Takes a json object containing the string to match.
+- Return a list of recipes matching the search term.
+
+```bash
+curl -d "{\"searchTerm\":\"bread\"}" -H "Content-Type: application/json" -X POST https://le-mitron.herokuapp.com/recipes
+```
+
 ### POST '/recipes/create'
+
+- Create a new recipe with the data provided.
+- Takes a json object as argument containing the name, time, category, description and instructions of the recipe.
+- Return the success value.
+
+```bash
+curl -d -H "Content-Type: application/json" -X POST https://le-mitron.herokuapp.com/recipes/create
+```
 
 ### POST '/category/create'
 
-### PATCH 'recipes/recipe_id/modify'
+- Create a new category with the data provided.
+- Takes a json object as argument containing the nam of the category.
+
+```bash
+curl -d "{\"name\": \"Pies\"}" -H "Content-Type: application/json" -X POST https://le-mitron.herokuapp.com/category/create
+```
+
+### PATCH 'recipes/<recipe_id>/modify'
+
+- Modify an existing recipe with provided information.
+- Takes one or many section of the recipe i.e name, time, description.
+
+```bash
+```
 
 ### DELETE '/recipes'
+
+- Delete a recipe.
+
+```bash
+curl -X DELETE https://le-mitron.herokuapp.com/recipes
+```
