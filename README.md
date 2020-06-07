@@ -29,6 +29,10 @@ pip install -r requirements.txt
 curl https://le-mitron.herokuapp.com/categories
 ```
 
+```json
+{"categories":[{"name":"Breads"},{"name":"Cakes"}],"success":true}
+```
+
 ### GET '/recipes'
 
 - Returns a list of recipe object.
@@ -36,6 +40,19 @@ curl https://le-mitron.herokuapp.com/categories
 
 ```bash
 curl https://le-mitron.herokuapp.com/recipes
+```
+
+```json
+{"recipe":[{"category":1,
+            "description":"Symmetrical butter receptacle",
+            "id":1,
+            "instructions":"many",
+            "name":"Sandwich bread",
+            "time":"3h"
+            },
+            {"category":2,
+            "description":"Unworthy fruits second chance",
+            "id...
 ```
 
 ### GET 'categories/<category_id>/recipes'
@@ -46,12 +63,22 @@ curl https://le-mitron.herokuapp.com/recipes
 curl https://le-mitron.herokuapp.com/categories/1/recipes
 ```
 
+```json
+{"category":"Breads","recipes":[{"category":1,"description":"Symmetrical butter
+                    receptacle","id":1,"instructions":"many","name":"Sandwich bread","time":"3h"}],"success":true}
+```
+
 ### GET '/recipes/<recipe_id>/ingredients'
 
 - Return a list of ingredients with quantity and measurement for given recipe.
 
 ```bash
 curl https://le-mitron.herokuapp.com/recipes/1/ingredients
+```
+
+```json
+{"ingredients":[{"measurement":"tbs","name":"Salt","quantity":"1/2"},{"measurement":"g","name":"Wat
+                    er","quantity":"300"}],"success":true}
 ```
 
 ### POST '/recipes'
@@ -89,6 +116,7 @@ curl -d "{\"name\": \"Pies\"}" -H "Content-Type: application/json" -X POST https
 - Takes one or many section of the recipe i.e name, time, description.
 
 ```bash
+
 ```
 
 ### DELETE '/recipes'
@@ -96,5 +124,5 @@ curl -d "{\"name\": \"Pies\"}" -H "Content-Type: application/json" -X POST https
 - Delete a recipe.
 
 ```bash
-curl -X DELETE https://le-mitron.herokuapp.com/recipes
+curl -X DELETE https://le-mitron.herokuapp.com/recipes/3
 ```
