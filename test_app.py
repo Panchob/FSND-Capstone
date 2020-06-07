@@ -31,7 +31,7 @@ class MitronTestCase(unittest.TestCase):
                         "1h", 
                         "Symmetrical butter receptacle", 
                         "many", 
-                        1),]
+                        1)]
         ingredients = [Ingredient("flour"),
                        Ingredient("water"),
                        Ingredient("salt")]
