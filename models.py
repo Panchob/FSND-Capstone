@@ -16,6 +16,7 @@ setup_db(app)
     binds a flask application and a SQLAlchemy service
 '''
 
+
 def setup_db(app, database_path=database_path):
     app.config["SQLALCHEMY_DATABASE_URI"] = database_path
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -28,6 +29,7 @@ def db_drop_and_create_all():
     db.drop_all()
     db.create_all()
 
+
 class Category(db.Model):
     __tablename__ = 'category'
 
@@ -36,11 +38,12 @@ class Category(db.Model):
 
     def __init__(self, name):
         self.name = name
-    
+
     def format(self):
         return {
             'name': self.name
         }
+
 
 class Recipe(db.Model):
     __tablename__ = 'recipe'
@@ -51,7 +54,10 @@ class Recipe(db.Model):
     description = Column(String(500))
     instructions = Column(String(5000))
     category = Column(Integer)
-    ingredients = db.relationship("Quantity", backref='recipe', lazy=True, passive_deletes=True)
+    ingredients = db.relationship("Quantity",
+                                  backref='recipe',
+                                  lazy=True,
+                                  passive_deletes=True)
 
     def __init__(self, name, time, description, instructions, category):
         self.name = name
@@ -69,24 +75,31 @@ class Recipe(db.Model):
             'instructions': self.instructions,
             'category': self.category
         }
-    
+
+
 class Ingredient(db.Model):
     __tablename__ = 'ingredient'
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    quantity = db.relationship("Quantity", backref='ingredient', lazy=True, passive_deletes=True)
+    quantity = db.relationship("Quantity",
+                               backref='ingredient',
+                               lazy=True,
+                               passive_deletes=True)
 
     def __init__(self, name):
         self.name = name
+
 
 class Quantity(db.Model):
     __tablename__ = 'quantity'
 
     id = Column(Integer, primary_key=True)
     recipe_id = Column(Integer, db.ForeignKey('recipe.id', ondelete="CASCADE"))
-    ingredient_id = Column(Integer, db.ForeignKey('ingredient.id', ondelete="CASCADE"))
-    measurement_id =  Column(Integer, db.ForeignKey('measurement.id', ondelete="CASCADE"))
+    ingredient_id = Column(Integer, db.ForeignKey('ingredient.id',
+                                                  ondelete="CASCADE"))
+    measurement_id = Column(Integer, db.ForeignKey('measurement.id',
+                                                   ondelete="CASCADE"))
     # String so it's possible to enter something like "3/4"
     quantity = Column(String)
 
@@ -102,8 +115,8 @@ class Measurement(db.Model):
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    quantity = db.relationship("Quantity", backref='measurement', lazy=True, passive_deletes=True)
+    quantity = db.relationship("Quantity", backref='measurement',
+                               lazy=True, passive_deletes=True)
 
     def __init__(self, name):
         self.name = name
-

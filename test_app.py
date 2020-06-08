@@ -24,19 +24,20 @@ class MitronTestCase(unittest.TestCase):
             self.db = SQLAlchemy()
             self.db.init_app(self.app)
             db_drop_and_create_all()
-        
+
         categories = [Category("Bread"),
                       Category("Cake")]
-        recipes = [Recipe("Sandwich bread", 
-                        "3h", 
-                        "Symmetrical butter receptacle", 
-                        "many", 
-                        2),
-                  Recipe("Cake", 
-                        "1h", 
-                        "Symmetrical butter receptacle", 
-                        "many", 
-                        1)]
+        recipes = [Recipe("Sandwich bread",
+                          "3h",
+                          "Symmetrical butter receptacle",
+                          "many",
+                          2),
+                   Recipe("Cake",
+                          "1h",
+                          "Symmetrical butter receptacle",
+                          "many",
+                          1)]
+
         ingredients = [Ingredient("flour"),
                        Ingredient("water"),
                        Ingredient("salt")]
@@ -46,26 +47,25 @@ class MitronTestCase(unittest.TestCase):
         quantities = [Quantity("3", 1, 1, 1),
                       Quantity("1", 2, 1, 1),
                       Quantity("1 1/2", 3, 2, 1)]
-        
+
         try:
             for recipe in recipes:
                 db.session.add(recipe)
             for category in categories:
-                db.session.add(category) 
+                db.session.add(category)
             for ingredient in ingredients:
-                db.session.add(ingredient) 
+                db.session.add(ingredient)
             for measurement in measurements:
-                db.session.add(measurement) 
+                db.session.add(measurement)
             db.session.commit()
             for quantity in quantities:
-                db.session.add(quantity) 
+                db.session.add(quantity)
             db.session.commit()
         except:
             db.session.rollback()
         finally:
             db.session.close()
-        
-        
+
         self.new_recipe = {
             'name': "Banana bread",
             'time': "1h",
@@ -92,7 +92,6 @@ class MitronTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
 
-
     def test_404_get_recipes(self):
         res = self.client().get('/recipes?page=100')
         data = json.loads(res.data)
@@ -100,7 +99,6 @@ class MitronTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
 
-    
     def test_get_categories(self):
         res = self.client().get('/categories')
         data = json.loads(res.data)
@@ -122,12 +120,13 @@ class MitronTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(len(data['recipes']))
-    
+
     def test_create_recipe(self):
-        res = self.client().post('/recipes/create',                                  
-                                  headers={
-                                     "Authorization": "Bearer {}".format(EDITOR_TOKEN)
-                                 }, json=self.new_recipe)
+        res = self.client().post('/recipes/create',
+                                 headers={
+                                     "Authorization": "Bearer {}".format(
+                                         EDITOR_TOKEN
+                                         )}, json=self.new_recipe)
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -135,8 +134,10 @@ class MitronTestCase(unittest.TestCase):
         self.assertTrue(data['created'])
 
     def test_delete_recipe(self):
-        res = self.client().delete('/recipes/2',  
-                                    headers={"Authorization": "Bearer {}".format(ADMIN_TOKEN)})
+        res = self.client().delete('/recipes/2',
+                                   headers={
+                                       "Authorization": "Bearer {}".format(
+                                           ADMIN_TOKEN)})
         data = json.loads(res.data)
 
         recipe = Recipe.query.filter(Recipe.id == 2).one_or_none()
@@ -146,19 +147,22 @@ class MitronTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertEqual(data['deleted'], 2)
         self.assertEqual(recipe, None)
-    
+
     def test_delete_unknown_recipe(self):
         res = self.client().delete('/recipes/99999',
-                                    headers={"Authorization": "Bearer {}".format(ADMIN_TOKEN)})
+                                   headers={
+                                       "Authorization": "Bearer {}".format(
+                                           ADMIN_TOKEN)})
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
 
     def test_create_category(self):
-        res = self.client().post('/categories/create', 
+        res = self.client().post('/categories/create',
                                  headers={
-                                     "Authorization": "Bearer {}".format(ADMIN_TOKEN)
+                                     "Authorization": "Bearer {}".format(
+                                         ADMIN_TOKEN)
                                  }, json=self.new_category)
         data = json.loads(res.data)
 
@@ -166,17 +170,16 @@ class MitronTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertTrue(data['created'])
 
-
     def test_unauthorize_create_category(self):
-        res = self.client().post('/categories/create', 
+        res = self.client().post('/categories/create',
                                  headers={
-                                     "Authorization": "Bearer {}".format(EDITOR_TOKEN)
+                                     "Authorization": "Bearer {}".format(
+                                         EDITOR_TOKEN)
                                  }, json=self.new_category)
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 500)
         self.assertEqual(data['success'], False)
-
 
     def test_list_recipes_from_category(self):
         res = self.client().get('/categories/1/recipes')
@@ -202,19 +205,21 @@ class MitronTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
 
     def test_modify_recipe(self):
-        res = self.client().patch('/recipes/1/modify',  
+        res = self.client().patch('/recipes/1/modify',
                                   headers={
-                                      "Authorization": "Bearer {}".format(EDITOR_TOKEN)
-                                      }, json={'time':"20m"})
+                                      "Authorization": "Bearer {}".format(
+                                          EDITOR_TOKEN)
+                                      }, json={'time': "20m"})
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
-    
+
     def test_422_modify_recipe(self):
-        res = self.client().patch('/recipes/1/modify',  
+        res = self.client().patch('/recipes/1/modify',
                                   headers={
-                                      "Authorization": "Bearer {}".format(EDITOR_TOKEN)})
+                                      "Authorization": "Bearer {}".format(
+                                          EDITOR_TOKEN)})
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 422)

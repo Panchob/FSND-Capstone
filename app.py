@@ -6,8 +6,9 @@ from auth.auth import requires_auth, AuthError
 
 RECIPE_PER_PAGE = 3
 
+
 def create_app(test_config=None):
-    
+
     app = Flask(__name__)
     setup_db(app)
     CORS(app)
@@ -20,18 +21,19 @@ def create_app(test_config=None):
 
     @app.route('/')
     def hello():
-        return "This is the landing page of Le Mitron. Front End is comming soon!"
-    
+        return "This is the landing page of Le Mitron.\
+        Front End is comming soon!"
+
     @app.route('/recipes')
     def retrieve_recipe():
         page = request.args.get('page', 1, type=int)
-        
+
         try:
             selection = Recipe.query.order_by(Recipe.id).\
                         paginate(page, RECIPE_PER_PAGE).items
         except:
             abort(404)
-        
+
         if len(selection) == 0:
             abort(404)
 
@@ -40,7 +42,7 @@ def create_app(test_config=None):
             'success': True,
             'recipe': recipes,
         })
-    
+
     @app.route('/recipes', methods=['POST'])
     def search_recipes():
         body = request.get_json()
@@ -48,14 +50,13 @@ def create_app(test_config=None):
         searchTerm = body.get("searchTerm", None)
         search_results = Recipe.query.\
             filter(Recipe.name.ilike("%{}%".format(searchTerm))).all()
-        
+
         recipes = [recipe.format() for recipe in search_results]
 
         return jsonify({
             'success': True,
             'recipes': recipes,
         })
-
 
     @app.route('/recipes/create', methods=['POST'])
     @requires_auth('post:recipes')
@@ -69,7 +70,8 @@ def create_app(test_config=None):
         instructions = body.get('instructions', None)
 
         try:
-            new_recipe = Recipe(name, time, description, instructions, category)
+            new_recipe = Recipe(name, time, description,
+                                instructions, category)
             db.session.add(new_recipe)
             db.session.commit()
 
@@ -92,15 +94,15 @@ def create_app(test_config=None):
 
             if recipe is None:
                 abort(404)
-            
+
             db.session.delete(recipe)
             db.session.commit()
 
             return jsonify({
-                'success':True,
+                'success': True,
                 'deleted': recipe_id
             })
-        
+
         except:
             db.session.rollback()
             abort(404)
@@ -127,7 +129,7 @@ def create_app(test_config=None):
             abort(422)
         finally:
             db.session.close()
-            
+
     @app.route('/categories')
     def retrieve_categories():
         selection = Category.query.all()
@@ -135,12 +137,12 @@ def create_app(test_config=None):
 
         if len(categories) == 0:
             abort(404)
-        
+
         return jsonify({
             'success': True,
-            'categories':categories
+            'categories': categories
         })
-    
+
     @app.route('/categories/<category_id>/recipes')
     def list_recipe_from_category(category_id):
 
@@ -163,7 +165,7 @@ def create_app(test_config=None):
 
         selection = Quantity.query.\
             filter(Quantity.recipe_id == recipe_id).all()
-        
+
         if selection is None:
             abort(404)
 
@@ -175,7 +177,6 @@ def create_app(test_config=None):
                 'measurement': Measurement.query.get(s.measurement_id).name
             }
             ingredients.append(ingredient)
-
 
         return jsonify({
             'success': True,
@@ -191,10 +192,10 @@ def create_app(test_config=None):
             recipe = Recipe.query.filter(Recipe.id == recipe_id).one_or_none()
             if not recipe:
                 abort(404)
-            
+
             if 'name' in body:
                 recipe.name = body.get('title')
-            
+
             if 'time' in body:
                 recipe.time = body.get('time')
 
@@ -203,10 +204,10 @@ def create_app(test_config=None):
 
             if 'instructions' in body:
                 recipe.instructions = body.get('instructions')
-            
+
             if 'category' in body:
                 recipe.category = body.get('category')
-            
+
             db.session.commit()
 
             return jsonify({
