@@ -2,6 +2,7 @@ import os
 from flask import Flask, request, abort, jsonify
 from models import *
 from flask_cors import CORS
+from auth.auth import requires_auth, AuthError
 
 RECIPE_PER_PAGE = 3
 
@@ -19,7 +20,7 @@ def create_app(test_config=None):
 
     @app.route('/')
     def hello():
-        return "HELLO"
+        return "This is the landing page of Le Mitron. Front End is comming soon!"
     
     @app.route('/recipes')
     def retrieve_recipe():
@@ -57,7 +58,8 @@ def create_app(test_config=None):
 
 
     @app.route('/recipes/create', methods=['POST'])
-    def create_new_recipe():
+    @requires_auth('post:recipes')
+    def create_new_recipe(payload):
         body = request.get_json()
 
         name = body.get('name', None)
@@ -82,7 +84,8 @@ def create_app(test_config=None):
             db.session.close()
 
     @app.route('/recipes/<int:recipe_id>', methods=['DELETE'])
-    def delete_recipe(recipe_id):
+    @requires_auth('delete:recipes')
+    def delete_recipe(payload, recipe_id):
         try:
             recipe = Recipe.query.\
                      filter(Recipe.id == recipe_id).one_or_none()
@@ -100,12 +103,13 @@ def create_app(test_config=None):
         
         except:
             db.session.rollback()
-            abort(422)
+            abort(404)
         finally:
             db.session.close()
 
-    @app.route('/category/create', methods=['POST'])
-    def create_new_category():
+    @app.route('/categories/create', methods=['POST'])
+    @requires_auth('post:categories')
+    def create_new_category(payload):
         body = request.get_json()
 
         name = body.get('name', None)
@@ -179,7 +183,8 @@ def create_app(test_config=None):
         })
 
     @app.route('/recipes/<int:recipe_id>/modify', methods=['PATCH'])
-    def modify_recipe(recipe_id):
+    @requires_auth('patch:recipes')
+    def modify_recipe(payload, recipe_id):
         body = request.get_json()
 
         try:

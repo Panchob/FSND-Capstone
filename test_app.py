@@ -6,6 +6,11 @@ from flask_sqlalchemy import SQLAlchemy
 from app import create_app
 from models import *
 
+
+ADMIN_TOKEN = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkFkMFVJY2NsTU1HWnF5a2hRSm5zcSJ9.eyJpc3MiOiJodHRwczovL3BhbmNob2IuYXV0aDAuY29tLyIsInN1YiI6ImVSNUdJOGxsYmZMQUhaMHVhVmxJS2RjZWZITE1qUjA2QGNsaWVudHMiLCJhdWQiOiJsZV9taXRyb24iLCJpYXQiOjE1OTE2MjYwOTAsImV4cCI6MTU5MTcxMjQ5MCwiYXpwIjoiZVI1R0k4bGxiZkxBSFowdWFWbElLZGNlZkhMTWpSMDYiLCJzY29wZSI6InBvc3Q6cmVjaXBlcyBwYXRjaDpyZWNpcGVzIHBvc3Q6Y2F0ZWdvcmllcyBkZWxldGU6cmVjaXBlcyIsImd0eSI6ImNsaWVudC1jcmVkZW50aWFscyIsInBlcm1pc3Npb25zIjpbInBvc3Q6cmVjaXBlcyIsInBhdGNoOnJlY2lwZXMiLCJwb3N0OmNhdGVnb3JpZXMiLCJkZWxldGU6cmVjaXBlcyJdfQ.EgioqpPWxO9nUk2sxFGeJbFPNOauWT77K5mAoGxCrsJpIRRgTyIvbn65O6mh9Cd1IssBH4c9nnBBdRETieCY_aIMbexDU5vD6EmA3YRacH2A4SOoaiz19IEJJEvcalTKs_pYllN1X7DstB0ggNcFGydAhIrR2YgiFVWdDjHGjfvuqUbleFjDrJF6IxLqnp1cIUXHayIXMRwlScsQwQDXfJPS2DxDxTWFcpNXrQtrlotFyY2XTeX6nW3rgDX_t7BLKo4OHtA3nxzv4wfHU3yEX9JHPHoDPSJvsg519MBVqhhC8yrLsxuigRNnGamn_gvOnXY9xzltrSm1S20NtrQ4UA'
+EDITOR_TOKEN = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkFkMFVJY2NsTU1HWnF5a2hRSm5zcSJ9.eyJpc3MiOiJodHRwczovL3BhbmNob2IuYXV0aDAuY29tLyIsInN1YiI6ImVSNUdJOGxsYmZMQUhaMHVhVmxJS2RjZWZITE1qUjA2QGNsaWVudHMiLCJhdWQiOiJsZV9taXRyb24iLCJpYXQiOjE1OTE2MjYyMTMsImV4cCI6MTU5MTcxMjYxMywiYXpwIjoiZVI1R0k4bGxiZkxBSFowdWFWbElLZGNlZkhMTWpSMDYiLCJzY29wZSI6InBvc3Q6cmVjaXBlcyBwYXRjaDpyZWNpcGVzIiwiZ3R5IjoiY2xpZW50LWNyZWRlbnRpYWxzIiwicGVybWlzc2lvbnMiOlsicG9zdDpyZWNpcGVzIiwicGF0Y2g6cmVjaXBlcyJdfQ.Dw7frMHaGpQLw5bZhp829xz1OOQ0tgXz7J8049Gx7yfNlcwanMlR6471lG01iF8auv3BxYkMHh6nyzSEjoHbzcXOc-Y207VxLe7QelceLIz8bgbVklDMeLWPSIfa6oBinLZp2oVYwVj2j5S2BwbRy2nQ10xqXzkBmAXWCn5DF4NPC2HzUs-DYjr744Mgs1MgIvQUo4YPA1-jQqbe8VEHZmTqkc_nWyGqJ2cIhlCnB8s3J_zMb_HJ5yiIir8EHpJk8smjmvqENSWYRFtHS5noE20o2Sl_ESlqxHGZeD0pOarS_kDcZTCLrAUiTisMoSaeyP-E4KjsUsXDsrKKVAgL7w'
+
+
 class MitronTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -86,6 +91,15 @@ class MitronTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
+
+
+    def test_404_get_recipes(self):
+        res = self.client().get('/recipes?page=100')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+
     
     def test_get_categories(self):
         res = self.client().get('/categories')
@@ -93,6 +107,13 @@ class MitronTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
+
+    def test_404_get_categories(self):
+        res = self.client().get('/category')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
 
     def test_search_recipe(self):
         res = self.client().post('/recipes', json={'searchTerm': "Bread"})
@@ -103,7 +124,10 @@ class MitronTestCase(unittest.TestCase):
         self.assertTrue(len(data['recipes']))
     
     def test_create_recipe(self):
-        res = self.client().post('/recipes/create', json=self.new_recipe)
+        res = self.client().post('/recipes/create',                                  
+                                  headers={
+                                     "Authorization": "Bearer {}".format(EDITOR_TOKEN)
+                                 }, json=self.new_recipe)
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -111,7 +135,8 @@ class MitronTestCase(unittest.TestCase):
         self.assertTrue(data['created'])
 
     def test_delete_recipe(self):
-        res = self.client().delete('/recipes/2')
+        res = self.client().delete('/recipes/2',  
+                                    headers={"Authorization": "Bearer {}".format(ADMIN_TOKEN)})
         data = json.loads(res.data)
 
         recipe = Recipe.query.filter(Recipe.id == 2).one_or_none()
@@ -123,19 +148,35 @@ class MitronTestCase(unittest.TestCase):
         self.assertEqual(recipe, None)
     
     def test_delete_unknown_recipe(self):
-        res = self.client().delete('/recipe/99999')
+        res = self.client().delete('/recipes/99999',
+                                    headers={"Authorization": "Bearer {}".format(ADMIN_TOKEN)})
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
 
     def test_create_category(self):
-        res = self.client().post('/category/create', json=self.new_category)
+        res = self.client().post('/categories/create', 
+                                 headers={
+                                     "Authorization": "Bearer {}".format(ADMIN_TOKEN)
+                                 }, json=self.new_category)
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['created'])
+
+
+    def test_unauthorize_create_category(self):
+        res = self.client().post('/categories/create', 
+                                 headers={
+                                     "Authorization": "Bearer {}".format(EDITOR_TOKEN)
+                                 }, json=self.new_category)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 500)
+        self.assertEqual(data['success'], False)
+
 
     def test_list_recipes_from_category(self):
         res = self.client().get('/categories/1/recipes')
@@ -161,12 +202,23 @@ class MitronTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
 
     def test_modify_recipe(self):
-        res = self.client().patch('/recipes/1/modify', json={'time':"20m"})
+        res = self.client().patch('/recipes/1/modify',  
+                                  headers={
+                                      "Authorization": "Bearer {}".format(EDITOR_TOKEN)
+                                      }, json={'time':"20m"})
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
     
+    def test_422_modify_recipe(self):
+        res = self.client().patch('/recipes/1/modify',  
+                                  headers={
+                                      "Authorization": "Bearer {}".format(EDITOR_TOKEN)})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data['success'], False)
 
 if __name__ == "__main__":
     unittest.main()
