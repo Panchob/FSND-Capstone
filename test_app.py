@@ -7,8 +7,8 @@ from app import create_app
 from models import *
 
 
-ADMIN_TOKEN = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkFkMFVJY2NsTU1HWnF5a2hRSm5zcSJ9.eyJpc3MiOiJodHRwczovL3BhbmNob2IuYXV0aDAuY29tLyIsInN1YiI6ImVSNUdJOGxsYmZMQUhaMHVhVmxJS2RjZWZITE1qUjA2QGNsaWVudHMiLCJhdWQiOiJsZV9taXRyb24iLCJpYXQiOjE1OTE2MjYwOTAsImV4cCI6MTU5MTcxMjQ5MCwiYXpwIjoiZVI1R0k4bGxiZkxBSFowdWFWbElLZGNlZkhMTWpSMDYiLCJzY29wZSI6InBvc3Q6cmVjaXBlcyBwYXRjaDpyZWNpcGVzIHBvc3Q6Y2F0ZWdvcmllcyBkZWxldGU6cmVjaXBlcyIsImd0eSI6ImNsaWVudC1jcmVkZW50aWFscyIsInBlcm1pc3Npb25zIjpbInBvc3Q6cmVjaXBlcyIsInBhdGNoOnJlY2lwZXMiLCJwb3N0OmNhdGVnb3JpZXMiLCJkZWxldGU6cmVjaXBlcyJdfQ.EgioqpPWxO9nUk2sxFGeJbFPNOauWT77K5mAoGxCrsJpIRRgTyIvbn65O6mh9Cd1IssBH4c9nnBBdRETieCY_aIMbexDU5vD6EmA3YRacH2A4SOoaiz19IEJJEvcalTKs_pYllN1X7DstB0ggNcFGydAhIrR2YgiFVWdDjHGjfvuqUbleFjDrJF6IxLqnp1cIUXHayIXMRwlScsQwQDXfJPS2DxDxTWFcpNXrQtrlotFyY2XTeX6nW3rgDX_t7BLKo4OHtA3nxzv4wfHU3yEX9JHPHoDPSJvsg519MBVqhhC8yrLsxuigRNnGamn_gvOnXY9xzltrSm1S20NtrQ4UA'
-EDITOR_TOKEN = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkFkMFVJY2NsTU1HWnF5a2hRSm5zcSJ9.eyJpc3MiOiJodHRwczovL3BhbmNob2IuYXV0aDAuY29tLyIsInN1YiI6ImVSNUdJOGxsYmZMQUhaMHVhVmxJS2RjZWZITE1qUjA2QGNsaWVudHMiLCJhdWQiOiJsZV9taXRyb24iLCJpYXQiOjE1OTE2MjYyMTMsImV4cCI6MTU5MTcxMjYxMywiYXpwIjoiZVI1R0k4bGxiZkxBSFowdWFWbElLZGNlZkhMTWpSMDYiLCJzY29wZSI6InBvc3Q6cmVjaXBlcyBwYXRjaDpyZWNpcGVzIiwiZ3R5IjoiY2xpZW50LWNyZWRlbnRpYWxzIiwicGVybWlzc2lvbnMiOlsicG9zdDpyZWNpcGVzIiwicGF0Y2g6cmVjaXBlcyJdfQ.Dw7frMHaGpQLw5bZhp829xz1OOQ0tgXz7J8049Gx7yfNlcwanMlR6471lG01iF8auv3BxYkMHh6nyzSEjoHbzcXOc-Y207VxLe7QelceLIz8bgbVklDMeLWPSIfa6oBinLZp2oVYwVj2j5S2BwbRy2nQ10xqXzkBmAXWCn5DF4NPC2HzUs-DYjr744Mgs1MgIvQUo4YPA1-jQqbe8VEHZmTqkc_nWyGqJ2cIhlCnB8s3J_zMb_HJ5yiIir8EHpJk8smjmvqENSWYRFtHS5noE20o2Sl_ESlqxHGZeD0pOarS_kDcZTCLrAUiTisMoSaeyP-E4KjsUsXDsrKKVAgL7w'
+ADMIN_TOKEN = os.environ.get('ADMIN_TOKEN')
+EDITOR_TOKEN = os.environ.get('EDITOR_TOKEN')
 
 
 class MitronTestCase(unittest.TestCase):
@@ -17,7 +17,7 @@ class MitronTestCase(unittest.TestCase):
         self.app = create_app()
         self.client = self.app.test_client
 
-        self.database_path = "postgres://postgres:61785@localhost:5432/mitron_test"
+        self.database_path = os.environ.get('DATABASE_URL_TEST')
         setup_db(self.app, self.database_path)
 
         with self.app.app_context():
@@ -61,7 +61,7 @@ class MitronTestCase(unittest.TestCase):
             for quantity in quantities:
                 db.session.add(quantity)
             db.session.commit()
-        except:
+        except Exception:
             db.session.rollback()
         finally:
             db.session.close()
@@ -224,6 +224,7 @@ class MitronTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 422)
         self.assertEqual(data['success'], False)
+
 
 if __name__ == "__main__":
     unittest.main()

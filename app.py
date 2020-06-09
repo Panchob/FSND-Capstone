@@ -31,7 +31,7 @@ def create_app(test_config=None):
         try:
             selection = Recipe.query.order_by(Recipe.id).\
                         paginate(page, RECIPE_PER_PAGE).items
-        except:
+        except Exception:
             abort(404)
 
         if len(selection) == 0:
@@ -79,7 +79,7 @@ def create_app(test_config=None):
                 'success': True,
                 'created': new_recipe.id
             }), 200
-        except:
+        except Exception:
             db.session.rollback()
             abort(422)
         finally:
@@ -103,7 +103,7 @@ def create_app(test_config=None):
                 'deleted': recipe_id
             })
 
-        except:
+        except Exception:
             db.session.rollback()
             abort(404)
         finally:
@@ -124,7 +124,7 @@ def create_app(test_config=None):
                 'success': True,
                 'created': new_category.id
             }), 200
-        except:
+        except Exception:
             db.session.rollback()
             abort(422)
         finally:
@@ -215,7 +215,7 @@ def create_app(test_config=None):
                 'recipe': recipe.format()
             })
 
-        except:
+        except Exception:
             db.session.rollback()
             abort(422)
         finally:
@@ -263,7 +263,9 @@ def create_app(test_config=None):
 
     return app
 
+
 app = create_app()
+
 
 if __name__ == "__main__":
     app.run()

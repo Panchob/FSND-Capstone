@@ -1,17 +1,20 @@
 import json
+import os
 from flask import request, _request_ctx_stack, abort
 from functools import wraps
 from jose import jwt
 from urllib.request import urlopen
 
-AUTH0_DOMAIN = 'panchob.auth0.com'
-ALGORITHMS = ['RS256']
-API_AUDIENCE = 'le_mitron'
+AUTH0_DOMAIN = os.environ['AUTH0_DOMAIN']
+ALGORITHMS = os.environ['ALGORITHMS']
+API_AUDIENCE = os.environ['API_AUDIENCE']
+
 
 class AuthError(Exception):
     def __init__(self, error, status_code):
         self.error = error
         self.status_code = status_code
+
 
 # Auth Header
 def get_token_auth_header():
@@ -46,6 +49,7 @@ def get_token_auth_header():
     token = parts[1]
     return token
 
+
 def check_permissions(permission, payload):
     if 'permissions' not in payload:
         raise AuthError({
@@ -59,6 +63,7 @@ def check_permissions(permission, payload):
             'description': 'Permission not found'
          }, 401)
     return True
+
 
 def verify_decode_jwt(token):
     jsonurl = urlopen(f'https://{AUTH0_DOMAIN}/.well-known/jwks.json')
@@ -113,6 +118,7 @@ def verify_decode_jwt(token):
                 'code': 'invalid_header',
                 'description': 'Unable to find the appropriate key.'
             }, 400)
+
 
 def requires_auth(permission=''):
     def requires_auth_decorator(f):

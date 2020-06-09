@@ -6,9 +6,6 @@ import json
 
 
 database_path = os.environ.get('DATABASE_URL')
-if not database_path:
-    database_path = "postgres://postgres:61785@localhost:5432/mitron"
-
 db = SQLAlchemy()
 
 '''
